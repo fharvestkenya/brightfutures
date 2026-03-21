@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Build A School — Afrika Bright Futures</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <!-- Paystack Inline JS -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+<body>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero__grain"></div>
+    <div class="hero__sun"></div>
+    <nav class="nav">
+      <span class="nav__brand">🌍 Bright Futures</span>
+      <a href="#donate" class="nav__cta">Donate Now</a>
+    </nav>
+    <div class="hero__content">
+      <p class="hero__eyebrow">Community Initiative · Afrika</p>
+      <h1 class="hero__title">Every Child<br/><em>Deserves</em> a<br/>Classroom.</h1>
+      <p class="hero__sub">Your contribution builds a real school — brick by brick — for children in rural Africa who currently learn under trees. Be part of something lasting.</p>
+      <a href="#donate" class="btn-primary">Start Donating ↓</a>
+    </div>
+  </header>
+
+  <!-- How it works -->
+  <section class="how-it-works">
+    <h2 class="section-title">Where Your Money Goes</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step__icon">🏗️</div>
+        <h3>Construction</h3>
+        <p>Funds cover materials, local labor and 4 permanent classrooms built to last decades.</p>
+      </div>
+      <div class="step">
+        <div class="step__icon">📚</div>
+        <h3>Books & Supplies</h3>
+        <p>Every student receives textbooks, stationery and learning materials on day one.</p>
+      </div>
+      <div class="step">
+        <div class="step__icon">🍽️</div>
+        <h3>Meals Program</h3>
+        <p>A daily meal keeps children in class and focused — hunger is the biggest dropout driver.</p>
+      </div>
+      <div class="step">
+        <div class="step__icon">👩‍🏫</div>
+        <h3>Teacher Salaries</h3>
+        <p>We fund qualified teachers for the first 3 years, ensuring continuity and quality.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Donation Section -->
+  <section id="donate" class="donation-section" style="background: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <h2 style="text-align: center; color: #333; font-size: 2rem; margin-bottom: 1rem;">Make a Donation</h2>
+    <p style="text-align: center; color: #555; font-size: 1.2rem; margin-bottom: 2rem;">Your support helps us build schools for children in need.</p>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+      <label for="donationAmount" style="font-size: 1rem; color: #333;">Enter Amount:</label>
+      <input type="number" id="donationAmount" placeholder="e.g., 1000" style="padding: 0.5rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 5px; width: 100%; max-width: 300px;" />
+      <label for="currency" style="font-size: 1rem; color: #333;">Select Currency:</label>
+      <select id="currency" style="padding: 0.5rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 5px; width: 100%; max-width: 300px;">
+        <option value="KES">KES (Kenyan Shilling)</option>
+        <option value="USD">USD (US Dollar)</option>
+      </select>
+      <button id="paystackButton" class="btn-primary" style="background: #007bff; color: #fff; padding: 0.75rem 1.5rem; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s;">Donate with Paystack</button>
+    </div>
+  </section>
+
+  <script>
+    // Paystack Public Key
+    const paystackPublicKey = "pk_live_6b0731fc3c46e9b9016cd585e4426fc4e2449a9f";
+
+    // Paystack Payment Function
+    function payWithPaystack() {
+      const amountInput = document.getElementById('donationAmount').value;
+      const currency = document.getElementById('currency').value;
+      const amount = parseInt(amountInput) * 100; // Convert to smallest currency unit
+
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid amount.');
+        return;
+      }
+
+      let handler = PaystackPop.setup({
+        key: paystackPublicKey, // Replace with your public key
+        email: "donor@example.com", // Replace with donor's email
+        amount: amount, // Dynamic amount
+        currency: currency, // Dynamic currency (KES or USD)
+        ref: "BRIGHTFUTURES_" + Math.floor((Math.random() * 1000000000) + 1), // Unique transaction reference
+        callback: function(response) {
+          // Payment successful, handle response
+          alert('Payment complete! Reference: ' + response.reference);
+          // TODO: Send response to server for verification
+        },
+        onClose: function() {
+          alert('Transaction was not completed, window closed.');
+        }
+      });
+      handler.openIframe();
+    }
+
+    // Attach event listener to the button
+    document.getElementById('paystackButton').addEventListener('click', payWithPaystack);
+  </script>
+
+  <!-- ✅ Success Modal -->
+  <div class="modal-overlay hidden" id="successModal">
+    <div class="modal">
+      <div class="modal__icon">🎉</div>
+      <h2>Thank You!</h2>
+      <p id="modalMsg"></p>
+      <div class="modal__ref" id="modalRef"></div>
+      <p class="modal__sub">A payment receipt has been sent to your email by Paystack.</p>
+      <button onclick="closeModal()" class="btn-primary">Done</button>
+    </div>
+  </div>
+
+  <!-- ❌ Cancelled Modal -->
+  <div class="modal-overlay hidden" id="failedModal">
+    <div class="modal">
+      <div class="modal__icon">😔</div>
+      <h2>Payment Cancelled</h2>
+      <p>No worries — you were not charged. You can try again whenever you're ready.</p>
+      <button onclick="document.getElementById('failedModal').classList.add('hidden')" class="btn-primary" style="background:var(--mid-gray); margin-top:20px">Close</button>
+    </div>
+  </div>
+
+  <!-- Contact Us Section -->
+  <section id="contact" class="contact-section" style="background: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-top: 2rem;">
+    <h2 style="text-align: center; color: #333; font-size: 2rem; margin-bottom: 1rem;">Contact Us</h2>
+    <p style="text-align: center; color: #555; font-size: 1.2rem; margin-bottom: 2rem;">Have questions or need assistance? Reach out to us directly on WhatsApp.</p>
+    <div style="display: flex; justify-content: center;">
+      <a href="https://wa.me/254702672729" target="_blank" style="background: #25D366; color: #fff; padding: 0.75rem 1.5rem; font-size: 1rem; border: none; border-radius: 5px; text-decoration: none; display: inline-block; transition: background 0.3s;">
+        Contact Us on WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <!-- Become a Partner Section -->
+  <section id="partner" style="background: #f9f9f9; padding: 4rem 2rem; text-align: center;">
+    <h2 style="font-size: 2.5rem; margin-bottom: 1rem; color: #333;">Become a Partner</h2>
+    <p style="font-size: 1.2rem; color: #555; margin-bottom: 2rem;">Join us in making a difference. Partner with us to transform lives and build brighter futures.</p>
+    <a href="https://wa.me/254702672729?text=I%20am%20interested%20in%20becoming%20a%20partner%20with%20Bright%20Futures%20Foundation." target="_blank" style="background: #007bff; color: #fff; padding: 1rem 2rem; font-size: 1.2rem; border-radius: 5px; text-decoration: none; transition: background 0.3s;">Become a Partner</a>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2026 Bright Futures Foundation · Building schools across Sub-Saharan Africa</p>
+    <p class="footer__links"><a href="#">Privacy</a> · <a href="#">Reports</a> · <a href="#">Contact</a></p>
+  </footer>
+
+  <style>
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .hero__content {
+        text-align: center;
+        padding: 1rem;
+      }
+
+      .hero__title {
+        font-size: 2rem;
+      }
+
+      .hero__sub {
+        font-size: 1rem;
+      }
+
+      .hero__stats {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .progress-section {
+        padding: 1rem;
+      }
+
+      .steps {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .donation-section {
+        padding: 1rem;
+      }
+
+      .contact-section {
+        padding: 1rem;
+      }
+
+      .contact-section a {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+      }
+    }
+  </style>
+
+  <script>
+    // ═══════════════════════════════════════════════════════
+    // 🔑  PAYSTACK CONFIG
+    //   1. Create a free account at https://paystack.com
+    //   2. Go to Settings → API Keys & Webhooks
+    //   3. Copy your PUBLIC key and paste it below
+    //   4. Use pk_test_... while testing, pk_live_... in prod
+    // ═══════════════════════════════════════════════════════
+    const PAYSTACK_PUBLIC_KEY = 'pk_live_6b0731fc3c46e9b9016cd585e4426fc4e2449a9f';
+
+    // ─── Exchange rate: 1 USD = X NGN ──────────────────────
+    // You can fetch this live, or update it periodically.
+    const USD_TO_NGN = 1600;
+
+    // ─── Campaign state ────────────────────────────────────
+    let raisedUSD  = 34210;
+    let donorCount = 412;
+    const GOAL_USD = 80000;
+
+    let selectedAmt = 100;
+
+    // ─── Amount buttons ─────────────────────────────────────
+    const amountBtns    = document.querySelectorAll('.amount-btn');
+    const customInput   = document.getElementById('customAmount');
+    const donateBtnText = document.getElementById('donateBtnText');
+
+    amountBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        amountBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+
+        if (btn.dataset.val === 'custom') {
+          customInput.classList.remove('hidden');
+          customInput.focus();
+          selectedAmt = null;
+          donateBtnText.textContent = 'Donate via Paystack →';
+        } else {
+          customInput.classList.add('hidden');
+          selectedAmt = parseInt(btn.dataset.val);
+          donateBtnText.textContent = `Donate $${selectedAmt} via Paystack →`;
+        }
+      });
+    });
+
+    customInput.addEventListener('input', () => {
+      selectedAmt = parseFloat(customInput.value) || null;
+      donateBtnText.textContent = selectedAmt
+        ? `Donate $${selectedAmt} via Paystack →`
+        : 'Donate via Paystack →';
+    });
+
+    // ─── Show inline error ──────────────────────────────────
+    function showError(msg) {
+      const banner = document.getElementById('errorBanner');
+      document.getElementById('errorMsg').textContent = msg;
+      banner.classList.remove('hidden');
+      banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ─── MAIN DONATE HANDLER ────────────────────────────────
+    function handleDonate() {
+      const name     = document.getElementById('donorName').value.trim();
+      const email    = document.getElementById('donorEmail').value.trim();
+      const phone    = document.getElementById('donorPhone').value.trim();
+      const isAnon   = document.getElementById('anonymous').checked;
+      const dedicate = document.getElementById('dedication').value.trim();
+
+      // Validation
+      if (!name)
+        return showError('Please enter your full name.');
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        return showError('Please enter a valid email address.');
+      if (!selectedAmt || selectedAmt < 1)
+        return showError('Please select or enter a donation amount (minimum $1).');
+      if (PAYSTACK_PUBLIC_KEY.includes('xxxx'))
+        return showError('Developer setup needed: replace PAYSTACK_PUBLIC_KEY in the script with your real Paystack public key.');
+
+      document.getElementById('errorBanner').classList.add('hidden');
+
+      // Convert USD → NGN → Kobo (Paystack uses smallest unit)
+      const amountKobo = Math.round(selectedAmt * USD_TO_NGN * 100);
+
+      // Unique reference
+      const ref = 'BF-SCH-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
+
+      // ── Open Paystack popup ────────────────────────────
+      const handler = PaystackPop.setup({
+        key:      PAYSTACK_PUBLIC_KEY,
+        email:    email,
+        amount:   amountKobo,
+        currency: 'NGN',
+        ref:      ref,
+        label:    isAnon ? 'Anonymous Donor' : name,
+        phone:    phone || undefined,
+
+        // Extra info visible on your Paystack dashboard
+        metadata: {
+          custom_fields: [
+            {
+              display_name:  'Donor Name',
+              variable_name: 'donor_name',
+              value:         isAnon ? 'Anonymous' : name
+            },
+            {
+              display_name:  'Campaign',
+              variable_name: 'campaign',
+              value:         'Build A School — Afrika Bright Futures'
+            },
+            {
+              display_name:  'Donation (USD)',
+              variable_name: 'usd_amount',
+              value:         `$${selectedAmt}`
+            },
+            {
+              display_name:  'Dedication',
+              variable_name: 'dedication',
+              value:         dedicate || 'N/A'
+            }
+          ]
+        },
+
+        // ✅ Called when payment is completed successfully
+        callback: function(response) {
+          onPaymentSuccess(response, name, isAnon, selectedAmt);
+        },
+
+        // ❌ Called when user closes without paying
+        onClose: function() {
+          document.getElementById('failedModal').classList.remove('hidden');
+        }
+      });
+
+      handler.openIframe();
+    }
+
+    // ─── Payment success callback ────────────────────────────
+    function onPaymentSuccess(response, name, isAnon, amt) {
+      // Update live campaign totals
+      raisedUSD  += amt;
+      donorCount += 1;
+
+      const pct = Math.min(Math.round((raisedUSD / GOAL_USD) * 100), 100);
+      document.getElementById('raisedAmt').textContent    = '$' + raisedUSD.toLocaleString();
+      document.getElementById('donorCount').textContent   = donorCount.toLocaleString();
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressPct').textContent  = pct + '%';
+
+      // Populate success modal
+      const displayName = isAnon ? 'An anonymous donor' : name;
+      document.getElementById('modalMsg').textContent =
+        `${displayName}, your $${Number(amt).toLocaleString()} donation has been confirmed by Paystack. You're now part of building a future for children in Africa. ✨`;
+      document.getElementById('modalRef').textContent =
+        `Transaction ref: ${response.reference}`;
+
+      document.getElementById('successModal').classList.remove('hidden');
+
+      // Reset form fields
+      ['donorName','donorEmail','donorPhone','dedication'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('anonymous').checked = false;
+      customInput.classList.add('hidden');
+      amountBtns.forEach(b => b.classList.remove('selected'));
+      document.querySelector('[data-val="100"]').classList.add('selected');
+      selectedAmt = 100;
+      donateBtnText.textContent = 'Donate $100 via Paystack →';
+    }
+
+    function closeModal() {
+      document.getElementById('successModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
